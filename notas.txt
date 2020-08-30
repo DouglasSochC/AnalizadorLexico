@@ -1,0 +1,17 @@
+Se debe de verificar como se va a hacer los tokens... 
+Segun tengo entendido un token es una palabra formada por varios char's, y pues para
+poder determinar cada token podemos determinarlo atravez de un estado (en el AFD que tengo
+pensado programar) el cual se identifica con un espacio.
+
+Cada token formado se debe de clasificar su tipo de token ya que al ser enviado
+al analizador sintactico seguramente va a suceder algo importante.
+
+Si deseo ver el final de alguna linea del textarea puedo utilizar el siguiente signo
+"#" ya que con eso se pude determinar el final de esa linea del codigo, esto se hace con
+el fin de poder determinar el error de alguna linea.
+
+Otra cosa que se debe de visualizar son las palabras reservadas, ya que eso tambien
+puede ser un error.
+
+Entonces como primer punto hay que crear los AFD que seran nuestros estados
+por cada caracter analizado.
