@@ -8,7 +8,7 @@ def tipoTocken(indice):
     if indice == 3:
         respuesta = "PALABRA_RESERVADA"    
     if indice == 4:
-        respuesta = "NUMERO_ENTRO"
+        respuesta = "NUMERO_ENTERO"
     if indice == 5:
         respuesta = "NUMERO_REAL"
     if indice == 6:
