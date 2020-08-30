@@ -25,4 +25,6 @@ def tipoTocken(indice):
         respuesta = "PRS_IZQ"
     if indice == 12:
         respuesta = "PRS_DER"
+    if  indice == 13:
+        respuesta = "CORCHETE"
     return respuesta
