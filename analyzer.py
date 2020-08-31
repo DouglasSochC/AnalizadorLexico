@@ -20,6 +20,9 @@ vlc = 1
 
 errores = []
 
+def DatoNuevo():
+    pass
+
 def lexer(entrada):
     estado = 0
     tokens = []
