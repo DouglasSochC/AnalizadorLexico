@@ -4,8 +4,8 @@ from tkinter import filedialog      # filechooser
 from tkinter import scrolledtext    # textarea
 from tkinter import messagebox      # message box
 
-from analyzer import lexer           # llamando a una funcion externa
-
+#from analyzer import lexer           # llamando a una funcion externa
+from analyzer import Analyzer
 
 class GUI:
     # Metodo que contiene la definicion de la interfaz grafica 
@@ -68,7 +68,8 @@ class GUI:
     def Analyze(self):
         entrada = self.txtEntrada.get("1.0", END) #fila 1 col 0 hasta fila 2 col 10
         #entrada = "hola("
-        retorno = lexer(entrada)
+        analisis = Analyzer()
+        retorno = analisis.lexer(entrada)
         self.txtConsola.delete("1.0", END)
         self.txtConsola.insert("1.0", retorno)
         messagebox.showinfo('Project 1', 'Analysis Finished')
