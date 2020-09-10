@@ -10,7 +10,7 @@ class Tipo(Enum):
     PUNTOCOMA = 6
     COMA = 7
     PUNTO = 8
-
+    
     # Expresiones Logicas Relacionales
     SIGNO_IGUAL = 9
     SIGNO_DISTINTO= 10
