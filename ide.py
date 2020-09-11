@@ -4,8 +4,10 @@ from tkinter import filedialog      # filechooser
 from tkinter import scrolledtext    # textarea
 from tkinter import messagebox      # message box
 
-from analyzer import lexer           # llamando a una funcion externa
-
+#from analyzer import lexer           # llamando a una funcion externa
+from analyzerjs import AnalyzerJS
+from analyzercss import AnalyzerCSS
+from analyzerhtml import AnalyzerHTML
 
 class GUI:
     # Metodo que contiene la definicion de la interfaz grafica 
@@ -59,16 +61,39 @@ class GUI:
         # textArea consola
         self.txtConsola = scrolledtext.ScrolledText(self.window,width=90,height=10)   
         self.txtConsola.place(x=50, y = 490)
-        self.btn = Button(self.window, text="Analyze", bg="black", fg="white", command=self.Analyze)    #btn Analyze
+        self.btn = Button(self.window, text="Analizar JS", bg="black", fg="white", command=self.AnalizarJS)    #btn Analyze
         self.btn.place(x=0, y = 0)
+        self.btncss = Button(self.window, text="Analizar CSS", bg="black", fg="white", command=self.AnalizarCSS)    #btn Analyze
+        self.btncss.place(x=100, y = 0)
+        self.btnhtml = Button(self.window, text="Analizar HTML", bg="black", fg="white", command=self.AnalizarHTML)    #btn Analyze
+        self.btnhtml.place(x=215, y = 0)
         # Dispara la interfaz
         self.txtEntrada.mainloop()
         self.window.mainloop()
 
-    def Analyze(self):
+    def AnalizarJS(self):
         entrada = self.txtEntrada.get("1.0", END) #fila 1 col 0 hasta fila 2 col 10
         #entrada = "hola("
-        retorno = lexer(entrada)
+        analisis = AnalyzerJS()
+        retorno = analisis.lexer(entrada)
+        self.txtConsola.delete("1.0", END)
+        self.txtConsola.insert("1.0", retorno)
+        messagebox.showinfo('Project 1', 'Analysis Finished')
+
+    def AnalizarCSS(self):
+        entrada = self.txtEntrada.get("1.0", END) #fila 1 col 0 hasta fila 2 col 10
+        #entrada = "hola("
+        analisis = AnalyzerCSS()
+        retorno = analisis.lexer(entrada)
+        self.txtConsola.delete("1.0", END)
+        self.txtConsola.insert("1.0", retorno)
+        messagebox.showinfo('Project 1', 'Analysis Finished')
+    
+    def AnalizarHTML(self):
+        entrada = self.txtEntrada.get("1.0", END) #fila 1 col 0 hasta fila 2 col 10
+        #entrada = "hola("
+        analisis = AnalyzerHTML()
+        retorno = analisis.lexer(entrada)
         self.txtConsola.delete("1.0", END)
         self.txtConsola.insert("1.0", retorno)
         messagebox.showinfo('Project 1', 'Analysis Finished')
