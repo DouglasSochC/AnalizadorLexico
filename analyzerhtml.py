@@ -1,9 +1,9 @@
-from tockenjs import Token
-from tockenjs import Tipo
+from tockenhtml import Token
+from tockenhtml import Tipo
 
 # El video de la explicacion de este codigo es el video del 26/08/20
 
-class AnalyzerJS:
+class AnalyzerHTML:
 
     list_tockens = []
     list_failure = list()
@@ -25,72 +25,37 @@ class AnalyzerJS:
             self.caracter = entrada[posicion]
             
             # S0 -> S1 (Simbolos del Lenguaje)
-            if self.caracter == "(":
-                self.agregarToken(Tipo.PARENT_IZQ , self.caracter)
-            elif self.caracter == ")":
-                self.agregarToken(Tipo.PARENT_DER , self.caracter)
-            elif self.caracter == "{":
-                self.agregarToken(Tipo.LLAVEIZQ , self.caracter)
-            elif self.caracter == "}":
-                self.agregarToken(Tipo.LLAVEDER , self.caracter)
-            elif self.caracter == ";":
-                self.agregarToken(Tipo.PUNTOCOMA , self.caracter)
-            elif self.caracter == ":":
-                self.agregarToken(Tipo.DOSPUNTOS , self.caracter)
-            elif self.caracter == ".":
-                self.agregarToken(Tipo.PUNTO , self.caracter)
-            elif self.caracter == ",":
-                self.agregarToken(Tipo.COMA , self.caracter)    
-            elif self.caracter == "=":
-                self.agregarToken(Tipo.SIGNO_IGUAL, self.caracter)
-            elif self.caracter == "<":
-                self.agregarToken(Tipo.SIGNO_IGUAL, self.caracter)
+            if self.caracter == "<":
+                self.agregarToken(Tipo.MENOR , self.caracter)
             elif self.caracter == ">":
-                self.agregarToken(Tipo.SIGNO_IGUAL, self.caracter)
-            elif self.caracter == "+":
-                self.agregarToken(Tipo.SUMA, self.caracter)
-            elif self.caracter == "-":
-                self.agregarToken(Tipo.RESTA, self.caracter)
-            elif self.caracter == "!":
-                self.agregarToken(Tipo.SIGNO_DISTINTO, self.caracter)    
-            elif self.caracter == "*":
-                self.agregarToken(Tipo.MULTIPLICACION, self.caracter)
-            elif self.caracter == "&":
-                self.agregarToken(Tipo.MULTIPLICACION, self.caracter) 
-            elif self.caracter == "|":
-                self.agregarToken(Tipo.MULTIPLICACION, self.caracter)     
+                self.agregarToken(Tipo.MAYOR , self.caracter)
             elif self.caracter == '"':
-                self.agregarToken(Tipo.NINGUNO, self.caracter)
+                self.agregarToken(Tipo.DOBLECOMILLA, self.caracter)
             elif self.caracter == "'":
-                self.agregarToken(Tipo.NINGUNO, self.caracter)
-            elif self.caracter == "/":
+                self.agregarToken(Tipo.COMILLA, self.caracter)
+            elif self.caracter == '=':
+                self.agregarToken(Tipo.DOBLECOMILLA, self.caracter)
+            elif self.caracter == '/':
+                self.agregarToken(Tipo.DIAGONAL, self.caracter)
+            elif self.caracter.isalpha() or self.caracter.isnumeric():
                 self.lexema += self.caracter
-                val = self.S6(posicion+1)
-                posicion = val
-
-            # S0 - S2 (Reservadas | Identificadores)
-            #Hay que recordar que en este lexema lleva guion bajo
-            elif self.caracter.isalpha():
                 tamanio_lexema = self.getTamanioLexemaTexto(posicion)
-                self.S2(posicion, posicion+tamanio_lexema)
-                posicion = posicion+tamanio_lexema-1
-                
-            # S0 -> S4 (Numericos)
-            elif self.caracter.isnumeric():
-                tamanio_lexema = self.getTamanioLexemaNumero(posicion)
-                self.S4(posicion, posicion+tamanio_lexema)
+                self.S1(posicion+1, posicion+tamanio_lexema)
                 posicion = posicion+tamanio_lexema-1
             elif self.caracter == " " or self.caracter == "\t" or self.caracter=="\n":
                 posicion +=1
                 continue
             else:
-                self.agregarErrores(posicion, self.caracter)
+                self.lexema += self.caracter
+                tamanio_lexema = self.getTamanioLexemaTexto(posicion)
+                self.S1(posicion+1, posicion+tamanio_lexema)
+                posicion = posicion+tamanio_lexema-1
             posicion += 1
         print("Estos son los tokens validos: ", self.list_tockens)
         print("Estos son los errores: ", self.list_failure)
         return ""
     
-    def S2(self, posInicial, posFinal):
+    def S1(self, posInicial, posFinal):
         inicial = posInicial
         final = posFinal
 
@@ -99,55 +64,109 @@ class AnalyzerJS:
         
         aux_lexema = self.lexema.lower()
 
-        if aux_lexema == "var":
-            self.agregarToken(Tipo.VAR, aux_lexema)
+        if aux_lexema == "html":
+            self.agregarToken(Tipo.HTML, aux_lexema)
             return
-        elif aux_lexema == "if":
-            self.agregarToken(Tipo.IF, aux_lexema)
+        elif aux_lexema == "head":
+            self.agregarToken(Tipo.HEAD, aux_lexema)
             return
-        elif aux_lexema == "else":
-            self.agregarToken(Tipo.ELSE, aux_lexema)
+        elif aux_lexema == "title":
+            self.agregarToken(Tipo.TITLE, aux_lexema)
             return
-        elif aux_lexema == "for":
-            self.agregarToken(Tipo.FOR, aux_lexema)
+        elif aux_lexema == "body":
+            self.agregarToken(Tipo.BODY, aux_lexema)
             return
-        elif aux_lexema == "while":
-            self.agregarToken(Tipo.WHILE, aux_lexema)
+        elif aux_lexema == "h1":
+            self.agregarToken(Tipo.SUB_TITLE, aux_lexema)
             return
-        elif aux_lexema == "do":
-            self.agregarToken(Tipo.DO, aux_lexema)
+        elif aux_lexema == "h2":
+            self.agregarToken(Tipo.SUB_TITLE, aux_lexema)
             return
-        elif aux_lexema == "continue":
-            self.agregarToken(Tipo.CONTINUE, aux_lexema)
+        elif aux_lexema == "h3":
+            self.agregarToken(Tipo.SUB_TITLE, aux_lexema)
             return
-        elif aux_lexema == "break":
-            self.agregarToken(Tipo.BREAK, aux_lexema)
+        elif aux_lexema == "h4":
+            self.agregarToken(Tipo.SUB_TITLE, aux_lexema)
             return
-        elif aux_lexema == "return":
-            self.agregarToken(Tipo.RETURN, aux_lexema)
+        elif aux_lexema == "h5":
+            self.agregarToken(Tipo.SUB_TITLE, aux_lexema)
             return
-        elif aux_lexema == "function":
-            self.agregarToken(Tipo.FUNCTION, aux_lexema)
+        elif aux_lexema == "h6":
+            self.agregarToken(Tipo.SUB_TITLE, aux_lexema)
             return
-        elif aux_lexema == "constructor":
-            self.agregarToken(Tipo.CONSTRUCTOR, aux_lexema)
+        elif aux_lexema == "p":
+            self.agregarToken(Tipo.PARRAFO, aux_lexema)
             return
-        elif aux_lexema == "class":
-            self.agregarToken(Tipo.CLASS, aux_lexema)
+        elif aux_lexema == "img":
+            self.agregarToken(Tipo.IMAGEN, aux_lexema)
             return    
+        elif aux_lexema == "a":
+            self.agregarToken(Tipo.HIPERVINCULO, aux_lexema)
+            return
+        elif aux_lexema == "ul":
+            self.agregarToken(Tipo.LISTAS, aux_lexema)
+            return
+        elif aux_lexema == "ol":
+            self.agregarToken(Tipo.LISTAS, aux_lexema)
+            return
+        elif aux_lexema == "li":
+            self.agregarToken(Tipo.LISTAS, aux_lexema)
+            return 
+        elif aux_lexema == "style":
+            self.agregarToken(Tipo.STYLE, aux_lexema)
+            return 
+        elif aux_lexema == "table":
+            self.agregarToken(Tipo.TABLE, aux_lexema)
+            return
+        elif aux_lexema == "th":
+            self.agregarToken(Tipo.TH, aux_lexema)
+            return 
+        elif aux_lexema == "tr":
+            self.agregarToken(Tipo.TR, aux_lexema)
+            return 
+        elif aux_lexema == "td":
+            self.agregarToken(Tipo.TD, aux_lexema)
+            return
+        elif aux_lexema == "caption":
+            self.agregarToken(Tipo.CAPTION, aux_lexema)
+            return
+        elif aux_lexema == "colgroup":
+            self.agregarToken(Tipo.COLGROUP, aux_lexema)
+            return
+        elif aux_lexema == "col":
+            self.agregarToken(Tipo.COL, aux_lexema)
+            return
+        elif aux_lexema == "thead":
+            self.agregarToken(Tipo.THEAD, aux_lexema)
+            return
+        elif aux_lexema == "tbody":
+            self.agregarToken(Tipo.TBODY, aux_lexema)
+            return
+        elif aux_lexema == "tfoot":
+            self.agregarToken(Tipo.TFOOT, aux_lexema)
+            return
+        else:
+            self.agregarToken(Tipo.VALOR, aux_lexema)
+            return
 
+    def S2(self, posInicial, posFinal):
+        auxcaracter = ""
+        while  (posInicial < posFinal):
+            auxcaracter = self.codigo[posInicial]
 
-        self.lexema = ""
-        while  (inicial < final):
-            auxcaracter = self.codigo[inicial]
-            
-            # S0 -> S3
-            if auxcaracter.isalpha():                
-                self.S3(inicial, final)
-                break
+            # S3 -> S3
+            if auxcaracter.isalpha():
+                self.lexema += auxcaracter
+                if  (posInicial+1 == posFinal):
+                    self.agregarToken(Tipo.VALOR, self.lexema)
+            # S3 -> S3
+            elif auxcaracter.isnumeric():
+                self.lexema += auxcaracter
+                if  (posInicial+1 == posFinal):
+                    self.agregarToken(Tipo.VALOR, self.lexema)  
             else:
-                self.agregarErrores(inicial, auxcaracter)
-            inicial += 1
+                self.agregarErrores(posInicial, auxcaracter)
+            posInicial += 1
 
     def S3(self, posInicial, posFinal):
         auxcaracter = ""
@@ -158,90 +177,18 @@ class AnalyzerJS:
             if auxcaracter.isalpha():
                 self.lexema += auxcaracter
                 if  (posInicial+1 == posFinal):
-                    self.agregarToken(Tipo.ID, self.lexema)                    
-            
-            elif auxcaracter == "_":
-                self.lexema += auxcaracter
-                if  (posInicial+1 == posFinal):
-                    self.agregarToken(Tipo.ID, self.lexema) 
-
+                    self.agregarToken(Tipo.VALOR, self.lexema)
             # S3 -> S3
             elif auxcaracter.isnumeric():
                 self.lexema += auxcaracter
                 if  (posInicial+1 == posFinal):
-                    self.agregarToken(Tipo.ID, self.lexema)  
+                    self.agregarToken(Tipo.VALOR, self.lexema)
+            elif self.caracter == " " or self.caracter == "\t" or self.caracter=="\n":
+                posInicial +=1
+                continue  
             else:
                 self.agregarErrores(posInicial, auxcaracter)
             posInicial += 1
-
-    def S4(self, posInicial, posFinal):
-        auxcaracter = ""
-        while  (posInicial < posFinal):
-            auxcaracter = self.codigo[posInicial]
-
-            # S4 -> S4
-            if auxcaracter.isnumeric():
-                self.lexema += auxcaracter
-                if  (posInicial+1 == posFinal):
-                    self.agregarToken(Tipo.VALOR, self.lexema)
-            elif auxcaracter == ".":
-                if  (posInicial == posFinal):
-                    self.lexema += auxcaracter
-                    self.S5(posInicial, posFinal)
-                break
-            else:
-                self.agregarErrores(posInicial, auxcaracter)
-            posInicial += 1
-
-    def S5(self, posInicial, posFinal):
-        caracter = ""
-        while  (posInicial < posFinal):
-            caracter = self.codigo[posInicial]
-
-            # S5 -> S5
-            if caracter.isnumeric():
-                self.lexema += caracter
-                if  (posInicial+1 == posFinal):
-                    self.agregarToken(Tipo.VALOR, self.lexema)
-            else:
-                self.agregarErrores(posInicial, self.caracter)
-            posInicial += 1
-
-    def S6(self, posInicial):
-        auxcaracter = ""
-        while (posInicial < len(self.codigo)):
-            auxcaracter = self.codigo[posInicial]
-            if  auxcaracter == "*":
-                # S6 -> S7
-                posInicial = self.S7(posInicial)
-
-            elif auxcaracter == "/":
-                tamaniolexema = self.getTamanioComentario(posInicial)
-                posInicial = posInicial + tamaniolexema
-
-            elif auxcaracter == " " or auxcaracter == "\t" or auxcaracter =="\n":
-                break
-            else:
-                # S0
-                self.agregarToken(Tipo.VALOR, self.lexema)
-                posInicial += 1
-                break
-            posInicial += 1
-        return posInicial
-
-    def S7(self, posInicial):
-        auxcaracter = ""
-        while (posInicial < len(self.codigo)):
-            # S0
-            if  self.codigo[posInicial] == "*" and self.codigo[posInicial+1] == "/":
-                self.lexema = ""
-                posInicial += 1
-                break
-            else:
-                # S7 -> S7
-                auxcaracter += self.codigo[posInicial]
-            posInicial += 1
-        return posInicial
 
     def agregarErrores(self, tipo, valor):
         #self.list_tockens.append(nuevo)
@@ -249,7 +196,7 @@ class AnalyzerJS:
         self.lexema = ""
 
     def agregarToken(self, tipo, valor):
-        nuevo = Token(tipo, valor)
+        #nuevo = Token(tipo, valor)
         #self.list_tockens.append(nuevo)
         self.list_tockens.append([tipo, valor])
         self.lexema = ""
@@ -257,23 +204,8 @@ class AnalyzerJS:
     def getTamanioLexemaTexto(self, posInicial):
         longitud = 0
         for i in range(posInicial, len(self.codigo)-1):
-            if self.codigo[i] == " " or self.codigo[i] == "(" or self.codigo[i] == ")" or self.codigo[i] == "{" or self.codigo[i] == "}" or self.codigo[i] == ";" or self.codigo[i] == ":" or self.codigo[i] == "." or self.codigo[i] == "," or self.codigo[i] == "=" or self.codigo[i] == "+" or self.codigo[i] == "-" or self.codigo[i] == "*" or self.codigo[i] == '"' or self.codigo[i] == "'" or self.codigo[i] == "\n" or self.codigo == "|":
+            if self.codigo[i] == " " or self.codigo[i] == ">" or self.codigo[i] == "/" or self.codigo[i] == "<" or self.codigo[i] == "=" or self.codigo[i] == "\n" or self.codigo[i] == "'" or self.codigo[i] == '"' or self.codigo[i] == ":" or self.codigo[i] == ";":
                 break
             longitud += 1
         return longitud
-
-    def getTamanioLexemaNumero(self, posInicial):
-        longitud = 0    
-        for i in range(posInicial, len(self.codigo)-1):
-            if self.codigo[i] == " " or self.codigo[i] == "(" or self.codigo[i] == ")" or self.codigo[i] == "{" or self.codigo[i] == "}" or self.codigo[i] == ";" or self.codigo[i] == ":" or self.codigo[i] == "." or self.codigo[i] == "," or self.codigo[i] == "=" or self.codigo[i] == "+" or self.codigo[i] == "-" or self.codigo[i] == "*" or self.codigo[i] == '"' or self.codigo[i] == "'" or self.codigo[i] == "\n":
-                break
-            longitud += 1
-        return longitud
-
-    def getTamanioComentario(self, posInicial):
-        longitud = 0    
-        for i in range(posInicial, len(self.codigo)-1):
-            if self.codigo[i] == "\n":
-                break
-            longitud += 1
-        return longitud    
+  

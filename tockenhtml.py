@@ -2,55 +2,40 @@ from enum import Enum
 
 class Tipo(Enum):
     # Simbolos del lenguaje
-    LLAVEIZQ = 1
-    LLAVEDER = 2
-    PARENT_IZQ = 3
-    PARENT_DER = 4
-    DOSPUNTOS = 5
-    PUNTOCOMA = 6
-    COMA = 7
-    PUNTO = 8
+    MAYOR = 1
+    MENOR = 2
+    DIAGONAL = 3
+    IGUAL = 4
     
-    # Expresiones Logicas Relacionales
-    SIGNO_IGUAL = 9
-    SIGNO_DISTINTO= 10
-    SIGNO_MAYORQ = 11
-    SIGNO_MENORQ = 12
-    SIGNO_MAYORIGUAL = 13
-    SIGNO_MENORIGUAL = 14
-
-    # Expresiones Logicas del Lenguaje
-    CONJUNCION = 15 #&&
-    DISYUNCION = 16 #||
-    NEGACION = 17 #!EXP
+    # Expresiones Regulares
+    VALOR = 5
+    NINGUNO = 6
 
     # Palabras Reservadas
-    VAR = 18
-    IF = 19
-    ELSE = 20
-    ELSE_IF = 21
-    FOR = 22
-    WHILE = 23
-    DO = 24
-    CONTINUE = 25
-    BREAK = 26
-    RETURN = 27
-    FUNCTION = 28
-    CONSTRUCTOR = 29
-    CLASS = 30
-    MATH_POW = 31
+    HTML = 7
+    HEAD = 8
+    TITLE = 9
+    BODY = 10
+    SUB_TITLE = 11
+    PARRAFO = 12
+    IMAGEN = 13
+    HIPERVINCULO = 14
+    LISTAS = 15
+    ESTILO = 16
+    TABLE = 17
+    TH = 18
+    TR = 19
+    TD = 20
+    CAPTION = 21
+    COLGROUP = 22
+    COL = 23
+    THEAD = 24
+    TBODY = 25
+    TFOOT = 26
+    STYLE = 27
 
-    # Expresion Aritmetica
-    SUMA = 32
-    RESTA = 33
-    MULTIPLICACION = 34
-    DIVISION = 35
-    POTENCIA = 36
-
-    # Expresiones Regulares
-    VALOR = 37 # Es el reconocimiento de un entero seguido de una cadena o solo un entero
-    ID = 38
-    NINGUNO = 39
+    DOBLECOMILLA = 28
+    COMILLA = 29
 
 class Token:
     tipoToken = Tipo.NINGUNO

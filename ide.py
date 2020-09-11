@@ -7,6 +7,7 @@ from tkinter import messagebox      # message box
 #from analyzer import lexer           # llamando a una funcion externa
 from analyzerjs import AnalyzerJS
 from analyzercss import AnalyzerCSS
+from analyzerhtml import AnalyzerHTML
 
 class GUI:
     # Metodo que contiene la definicion de la interfaz grafica 
@@ -91,7 +92,7 @@ class GUI:
     def AnalizarHTML(self):
         entrada = self.txtEntrada.get("1.0", END) #fila 1 col 0 hasta fila 2 col 10
         #entrada = "hola("
-        analisis = AnalyzerCSS()
+        analisis = AnalyzerHTML()
         retorno = analisis.lexer(entrada)
         self.txtConsola.delete("1.0", END)
         self.txtConsola.insert("1.0", retorno)
