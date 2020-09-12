@@ -10,32 +10,33 @@ class Tipo(Enum):
     # Expresiones Regulares
     VALOR = 5
     NINGUNO = 6
+    ID = 7
 
     # Palabras Reservadas
-    HTML = 7
-    HEAD = 8
-    TITLE = 9
-    BODY = 10
-    SUB_TITLE = 11
-    PARRAFO = 12
-    IMAGEN = 13
-    HIPERVINCULO = 14
-    LISTAS = 15
-    ESTILO = 16
-    TABLE = 17
-    TH = 18
-    TR = 19
-    TD = 20
-    CAPTION = 21
-    COLGROUP = 22
-    COL = 23
-    THEAD = 24
-    TBODY = 25
-    TFOOT = 26
-    STYLE = 27
+    HTML = 8
+    HEAD = 9
+    TITLE = 10
+    BODY = 11
+    SUB_TITLE = 12
+    PARRAFO = 13
+    IMAGEN = 14
+    HIPERVINCULO = 15
+    LISTAS = 16
+    ESTILO = 17
+    TABLE = 18
+    TH = 19
+    TR = 20
+    TD = 21
+    CAPTION = 22
+    COLGROUP = 23
+    COL = 24
+    THEAD = 25
+    TBODY = 26
+    TFOOT = 27
+    STYLE = 28
 
-    DOBLECOMILLA = 28
-    COMILLA = 29
+    DOBLECOMILLA = 29
+    COMILLA = 30
 
 class Token:
     tipoToken = Tipo.NINGUNO
