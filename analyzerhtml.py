@@ -250,7 +250,7 @@ class AnalyzerHTML:
                 # S5 -> S6
                 if  auxcaracter == "!" and self.codigo[posInicial + 1] == "-" and self.codigo[posInicial + 2] == "-":
                     self.lexema = ""  
-                    val = self.S6(posInicial+2)
+                    val = self.S6(posInicial+3)
                     posInicial = val
                     break
                 else: 
@@ -267,13 +267,17 @@ class AnalyzerHTML:
         while (posInicial < posFinal):
             
             auxcaracter = self.codigo[posInicial]            
-            
-            if posInicial+2 != posFinal-1:
+            valuno = posInicial+2
+            valdos = posFinal-1
+
+            if valuno != valdos:
+            #if (posInicial+2) > (posFinal-1):
                 # S7 -> S10
                 if  auxcaracter == "-" and self.codigo[posInicial + 1] == "-" and self.codigo[posInicial + 2] == ">":
                     posInicial = posInicial+2
-                    self.list_path.append(auxpath)
-                    self.lineaspath -= 1
+                    if auxpath != "":
+                        self.list_path.append(auxpath)
+                        self.lineaspath -= 1
                     break
                 else:
                     if self.lineaspath > 0:
