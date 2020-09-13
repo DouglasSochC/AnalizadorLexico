@@ -42,6 +42,7 @@ class AnalyzerCSS:
                 self.agregarToken(Tipo.GUION, self.caracter)
             elif self.caracter == "*":
                 self.agregarToken(Tipo.ASTERISCO, self.caracter)
+            
             elif self.caracter == '"':
                 self.agregarToken(Tipo.DOBLECOMILLA, self.caracter)
                 tamanio_lexema = self.getPosicionCierreD(posicion+1)
@@ -50,6 +51,7 @@ class AnalyzerCSS:
                 self.agregarToken(Tipo.VALOR , self.lexema)
                 self.agregarToken(Tipo.DOBLECOMILLA, self.caracter)
                 posicion = posicion+tamanio_lexema+1
+            
             elif self.caracter == "'":
                 self.agregarToken(Tipo.COMILLA, self.caracter)
                 tamanio_lexema = self.getPosicionCierreD(posicion+1)

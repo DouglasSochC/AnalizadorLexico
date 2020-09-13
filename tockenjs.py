@@ -51,6 +51,8 @@ class Tipo(Enum):
     VALOR = 37 # Es el reconocimiento de un entero seguido de una cadena o solo un entero
     ID = 38
     NINGUNO = 39
+    DOBLECOMILLA = 40
+    COMILLA = 41
 
 class Token:
     tipoToken = Tipo.NINGUNO
