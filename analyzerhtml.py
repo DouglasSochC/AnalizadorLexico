@@ -266,12 +266,9 @@ class AnalyzerHTML:
         auxpath = ""
         while (posInicial < posFinal):
             
-            auxcaracter = self.codigo[posInicial]            
-            valuno = posInicial+2
-            valdos = posFinal-1
+            auxcaracter = self.codigo[posInicial]
 
-            if valuno != valdos:
-            #if (posInicial+2) > (posFinal-1):
+            if posInicial+2 != posFinal-1:
                 # S7 -> S10
                 if  auxcaracter == "-" and self.codigo[posInicial + 1] == "-" and self.codigo[posInicial + 2] == ">":
                     posInicial = posInicial+2
@@ -317,7 +314,6 @@ class AnalyzerHTML:
     def getPosicionCierreD(self, posInicial):
         longitud = 0
         for i in range(posInicial, len(self.codigo)-1):
-            prueba = self.codigo[i]
             if self.codigo[i] == '"' or self.codigo[i] == "'":
                 break
             longitud += 1
