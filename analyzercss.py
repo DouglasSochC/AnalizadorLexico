@@ -1,19 +1,21 @@
 from tockencss import Token
 from tockencss import Tipo
-
+from tkinter import filedialog
 # El video de la explicacion de este codigo es el video del 26/08/20
 
 class AnalyzerCSS:
 
     list_tockens = []
     list_path = []
-    list_failure = list()
+    list_failure = []
     post_errors = list()
     caracter = ""
     lexema = ""
     codigo = ""
     errores = []
-    lineaspath = 2 
+    lineaspath = 2
+    lineadeanalisis = 1
+    posicionenlinea = 0 
 
     def lexer(self, entrada):
         posicion = 0
@@ -96,15 +98,28 @@ class AnalyzerCSS:
 
             #Este solo realiza la siguiente iteracion, quiero decir que no se toma 
             # en cuenta estos caracteres
-            elif self.caracter == " " or self.caracter == "\t" or self.caracter=="\n":
+            elif self.caracter == " " or self.caracter == "\t":
+                posicion +=1
+                continue
+            elif self.caracter == "\n":
+                self.lineadeanalisis +=1
                 posicion +=1
                 continue
             else:
                 self.agregarErrores(posicion, self.caracter)
             posicion += 1
-        print("Estos son los tokens validos: ", self.list_tockens)
-        print("Estos son los errores: ", self.list_failure)
-        print("Estos son los path: ", self.list_path)
+        
+        self.limpiarErrores()
+        for p in self.list_path:
+            if len(p.replace("PATHW:","")) != len(p):
+                
+                nameFile= p.replace("PATHW:","").replace(" ","")+"\salidacss.css"
+                if nameFile!='':
+                    contenido=self.codigo
+                    archi1=open(nameFile, "w", encoding="utf-8")
+                    archi1.write(contenido) 
+                    archi1.close()
+        self.list_failure.clear()
         return ""
     
     def S2(self, posInicial, posFinal):
@@ -397,17 +412,18 @@ class AnalyzerCSS:
             aux_lexema += self.codigo[x]
         
         aux_lexema = aux_lexema.lower()
-
-        if aux_lexema == "px" or aux_lexema == "em" or aux_lexema == "vh" or aux_lexema == "vw" or aux_lexema == "in" or aux_lexema == "cm" or aux_lexema == "mm" or aux_lexema == "pt" or aux_lexema == "pc":
+        
+        if aux_lexema == "px" or aux_lexema == "em" or aux_lexema == "rem" or aux_lexema == "vh" or aux_lexema == "vw" or aux_lexema == "in" or aux_lexema == "cm" or aux_lexema == "mm" or aux_lexema == "pt" or aux_lexema == "pc":
             self.lexema += aux_lexema
             self.agregarToken(Tipo.UNIDAD_MEDIDA, self.lexema)
             return
         else:
             self.agregarToken(Tipo.VALOR, self.lexema)
-            self.agregarErrores(posInicial, aux_lexema)
+            for x in range (inicial, final):
+                self.agregarErrores(x, self.codigo[x])
 
-    def agregarErrores(self, tipo, valor):
-        self.list_failure.append([tipo, valor])
+    def agregarErrores(self, posicion, valor):
+        self.list_failure.append([posicion, valor, self.lineadeanalisis])
         self.lexema = ""
 
     def agregarToken(self, tipo, valor):
@@ -447,4 +463,9 @@ class AnalyzerCSS:
             if self.codigo[i] == "\n":
                 break
             longitud += 1
-        return longitud    
+        return longitud
+    
+    def limpiarErrores(self):
+        for i in reversed(self.list_failure):
+            salida = self.codigo[:i[0]]+self.codigo[i[0]+1:]
+            self.codigo = salida

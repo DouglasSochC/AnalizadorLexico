@@ -26,11 +26,11 @@ class GUI:
         # propiedades del menu 
         self.menu = Menu(self.window)
         self.file_item = Menu(self.menu)  #Menu File
-        self.file_item.add_command(label='Open File', command=self.abrirFile)
+        self.file_item.add_command(label='Nuevo', command=self.nuevoArchivo)
+        self.file_item.add_command(label='Abrir', command=self.abrirFile)
+        self.file_item.add_command(label='Guardar', command=self.guardarArchivo)
         self.file_item.add_separator()
-        self.file_item.add_command(label='Analyze')
-        self.file_item.add_separator()
-        self.file_item.add_command(label='Exit')
+        self.file_item.add_command(label='Salir')
 
         self.report_item = Menu(self.menu)    # menu Reports
         self.report_item.add_separator()
@@ -108,6 +108,20 @@ class GUI:
             self.txtEntrada.delete("1.0", END) 
             self.txtEntrada.insert("1.0", contenido)
 
+    def guardarArchivo(self):
+        nameFile=filedialog.asksaveasfilename(title = "Seleccione archivo",filetypes = (("js files","*.js"), ("html files","*.html"),("css files","*.css"),("All Files","*.*")))
+        
+        if nameFile!='':
+            contenido=self.txtEntrada.get("1.0", END)
+            archi1=open(nameFile, "w", encoding="utf-8")
+            print("Esta apartir del ide ",nameFile)
+            archi1.write(contenido) 
+            archi1.close()
+            self.txtEntrada.delete("1.0", END) 
+            self.txtEntrada.insert("1.0", contenido)
+
+    def nuevoArchivo(self):
+        self.txtEntrada.delete("1.0", END)
 
 start = GUI()
 

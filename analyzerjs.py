@@ -104,9 +104,18 @@ class AnalyzerJS:
             else:
                 self.agregarErrores(posicion, self.caracter)
             posicion += 1
-        print("Estos son los tokens validos: ", self.list_tockens)
-        print("Estos son los errores: ", self.list_failure)
-        print("Estos son los path: ", self.list_path)
+        
+        self.limpiarErrores()
+        for p in self.list_path:
+            if len(p.replace("PATHW","")) != len(p):
+                
+                nameFile= p.replace("PATHW","").replace(" ","").replace("->","")+"\salidajs.js"
+                if nameFile!='':
+                    contenido=self.codigo
+                    archi1=open(nameFile, "w", encoding="utf-8")
+                    archi1.write(contenido) 
+                    archi1.close()
+        self.list_failure.clear()
         return ""
     
     def S2(self, posInicial, posFinal):
@@ -326,4 +335,9 @@ class AnalyzerJS:
             if self.codigo[i] == "\n":
                 break
             longitud += 1
-        return longitud    
+        return longitud
+
+    def limpiarErrores(self):
+        for i in reversed(self.list_failure):
+            salida = self.codigo[:i[0]]+' '+self.codigo[i[0]+1:]
+            self.codigo = salida    
