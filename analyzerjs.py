@@ -57,30 +57,36 @@ class AnalyzerJS:
             elif self.caracter == "|":
                 self.agregarToken(Tipo.MULTIPLICACION, self.caracter)     
             
+            # S0 -> S12
             elif self.caracter == '"':
                 self.agregarToken(Tipo.DOBLECOMILLA, self.caracter)
                 tamanio_lexema = self.getPosicionCierreD(posicion+1)
+                # S12 - > S12
                 for x in range(posicion+1, posicion+1+tamanio_lexema):
                     self.lexema += self.codigo[x]
                 self.agregarToken(Tipo.VALOR , self.lexema)
+                # S12 -> S13
                 self.agregarToken(Tipo.DOBLECOMILLA, self.caracter)
                 posicion = posicion+tamanio_lexema+1
             
+            # S0 -> S14
             elif self.caracter == "'":
                 self.agregarToken(Tipo.COMILLA, self.caracter)
                 tamanio_lexema = self.getPosicionCierreD(posicion+1)
+                # S14 -> S14
                 for x in range(posicion+1, posicion+1+tamanio_lexema):
                     self.lexema += self.codigo[x]
+                # S14 -> S15
                 self.agregarToken(Tipo.VALOR , self.lexema)
                 posicion = posicion+tamanio_lexema+1
             
+            # S0 -> S6
             elif self.caracter == "/":
                 self.lexema += self.caracter
                 val = self.S6(posicion+1)
                 posicion = val
 
             # S0 - S2 (Reservadas | Identificadores)
-            #Hay que recordar que en este lexema lleva guion bajo
             elif self.caracter.isalpha():
                 tamanio_lexema = self.getTamanioLexemaTexto(posicion)
                 self.S2(posicion, posicion+tamanio_lexema)
@@ -172,7 +178,7 @@ class AnalyzerJS:
                 self.lexema += auxcaracter
                 if  (posInicial+1 == posFinal):
                     self.agregarToken(Tipo.ID, self.lexema)                    
-            
+            # S3 -> S3
             elif auxcaracter == "_":
                 self.lexema += auxcaracter
                 if  (posInicial+1 == posFinal):
@@ -197,6 +203,8 @@ class AnalyzerJS:
                 self.lexema += auxcaracter
                 if  (posInicial+1 == posFinal):
                     self.agregarToken(Tipo.VALOR, self.lexema)
+
+            # S4 -> S5
             elif auxcaracter == ".":
                 if  (posInicial == posFinal):
                     self.lexema += auxcaracter
@@ -232,15 +240,13 @@ class AnalyzerJS:
                 val = self.S7(posInicial+1)
                 posInicial = val
                 break
-            # S6 -> S12
+            
+            # S6 -> S11
             elif auxcaracter == "/":
                 tamaniolexema = self.getTamanioComentario(posInicial)
                 posInicial = posInicial + tamaniolexema
                 self.lexema = ""
                 break
-            #Esto se hizo de esta forma ya que si despues de un / se encuentra algun simbolo
-            #que no sea / ó * entonces ese simbolo debe de ser analizado a partir del S0 y
-            #se toma la / como un error lexico
             else:
                 # S0
                 posNueva = posInicial - 1

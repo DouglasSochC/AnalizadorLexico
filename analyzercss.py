@@ -13,7 +13,7 @@ class AnalyzerCSS:
     lexema = ""
     codigo = ""
     errores = []
-    lineaspath = 2   
+    lineaspath = 2 
 
     def lexer(self, entrada):
         posicion = 0
@@ -43,20 +43,28 @@ class AnalyzerCSS:
             elif self.caracter == "*":
                 self.agregarToken(Tipo.ASTERISCO, self.caracter)
             
+            # S0 -> S12
             elif self.caracter == '"':
                 self.agregarToken(Tipo.DOBLECOMILLA, self.caracter)
                 tamanio_lexema = self.getPosicionCierreD(posicion+1)
+                # S12 - S12
                 for x in range(posicion+1, posicion+1+tamanio_lexema):
                     self.lexema += self.codigo[x]
                 self.agregarToken(Tipo.VALOR , self.lexema)
+                # S12 -> S13
                 self.agregarToken(Tipo.DOBLECOMILLA, self.caracter)
                 posicion = posicion+tamanio_lexema+1
             
+            # S0 -> S14
             elif self.caracter == "'":
                 self.agregarToken(Tipo.COMILLA, self.caracter)
                 tamanio_lexema = self.getPosicionCierreD(posicion+1)
+                
+                # S14 -> S14
                 for x in range(posicion+1, posicion+1+tamanio_lexema):
                     self.lexema += self.codigo[x]
+                
+                # S14 -> S15
                 self.agregarToken(Tipo.VALOR , self.lexema)
                 posicion = posicion+tamanio_lexema+1
             
@@ -66,24 +74,24 @@ class AnalyzerCSS:
                 val = self.S6(posicion+1)
                 posicion = val
 
-            # S0 - S1 (Reservadas | Identificadores)
+            # S0 - S2 (Reservadas | Identificadores)
             elif self.caracter.isalpha():
                 tamanio_lexema = self.getTamanioLexemaTexto(posicion)
                 self.S2(posicion, posicion+tamanio_lexema)
-                posicion = posicion+tamanio_lexema-1
-            
-            # S0 -> S9
-            elif self.caracter == "#" or self.caracter == ".":
-                tamanio_lexema = self.getTamanioLexemaTexto(posicion)
-                self.lexema += self.caracter
-                # S9 -> S3
-                self.S3(posicion+1, posicion+tamanio_lexema)
                 posicion = posicion+tamanio_lexema-1
             
             # S0 -> S4 (Numericos)
             elif self.caracter.isnumeric():
                 tamanio_lexema = self.getTamanioLexemaNumero(posicion)
                 self.S4(posicion, posicion+tamanio_lexema)
+                posicion = posicion+tamanio_lexema-1
+
+            # S0 -> S9
+            elif self.caracter == "#" or self.caracter == ".":
+                tamanio_lexema = self.getTamanioLexemaTexto(posicion)
+                self.lexema += self.caracter
+                # S9 -> S3
+                self.S3(posicion+1, posicion+tamanio_lexema)
                 posicion = posicion+tamanio_lexema-1
 
             #Este solo realiza la siguiente iteracion, quiero decir que no se toma 
@@ -285,6 +293,8 @@ class AnalyzerCSS:
             elif auxcaracter.isalpha():
                 self.S8(posInicial, posFinal)
                 break
+
+            # S4 -> S4
             elif auxcaracter == "%":
                 self.lexema += auxcaracter
                 self.agregarToken(Tipo.PORCENTAJE, self.lexema)
@@ -307,11 +317,16 @@ class AnalyzerCSS:
             elif auxcaracter.isalpha():
                 self.S8(posInicial, posFinal)
                 break
+            
+            # S5 -> S5
+            elif auxcaracter == "%":
+                self.lexema += auxcaracter
+                self.agregarToken(Tipo.PORCENTAJE, self.lexema)
+
             else:
                 self.agregarErrores(posInicial, self.lexema)
             posInicial += 1
 
-    # AFD Comentarios
     def S6(self, posInicial):
         auxcaracter = ""
 
@@ -324,7 +339,8 @@ class AnalyzerCSS:
                 val = self.S7(posInicial+1)
                 posInicial = val
                 break
-            # S6 -> S12
+
+            # S6 -> S11
             elif auxcaracter == "/":
                 tamaniolexema = self.getTamanioComentario(posInicial)
                 posInicial = posInicial + tamaniolexema
@@ -360,6 +376,7 @@ class AnalyzerCSS:
                         self.list_path.append(auxpath)
                         self.lineaspath -= 1
                     break
+                
                 # S7 -> S7
                 else:
                     if self.lineaspath > 0:
