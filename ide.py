@@ -8,6 +8,7 @@ from tkinter import messagebox      # message box
 from analyzerjs import AnalyzerJS
 from analyzercss import AnalyzerCSS
 from analyzerhtml import AnalyzerHTML
+from analyzeralgebra import AnalyzerAlgebra
 
 class GUI:
     # Metodo que contiene la definicion de la interfaz grafica 
@@ -49,7 +50,7 @@ class GUI:
         
         # textArea Entrada
         self.txtEntrada.place(x=50, y = 60)
-        self.txtEntrada.insert("1.0", """/*\n\nEste\nes un \ncomentario \n@ multilínea\n\n*/\n\nvar int = 1\nvar string ="4"\nvar char = '4'\nvar boolean = true\n\nvar edad = 18;\nif(edad >= 18) {\nconsole.log("Eres mayor de edad");\n} else {\nconsole.log("Todavía eres menor de\nedad")""")
+        #self.txtEntrada.insert("1.0", """/*\n\nEste\nes un \ncomentario \n@ multilínea\n\n*/\n\nvar int = 1\nvar string ="4"\nvar char = '4'\nvar boolean = true\n\nvar edad = 18;\nif(edad >= 18) {\nconsole.log("Eres mayor de edad");\n} else {\nconsole.log("Todavía eres menor de\nedad")""")
         #Background = color de fondo
         #Foreground = color de las letras
         #self.txtEntrada.insert("0.0", "")
@@ -67,6 +68,8 @@ class GUI:
         self.btncss.place(x=100, y = 0)
         self.btnhtml = Button(self.window, text="Analizar HTML", bg="black", fg="white", command=self.AnalizarHTML)    #btn Analyze
         self.btnhtml.place(x=215, y = 0)
+        self.btnhtml = Button(self.window, text="Analizar Algebra", bg="black", fg="white", command=self.AnalizarAlgebra)    #btn Analyze
+        self.btnhtml.place(x=350, y = 0)
         # Dispara la interfaz
         self.txtEntrada.mainloop()
         self.window.mainloop()
@@ -93,6 +96,15 @@ class GUI:
         entrada = self.txtEntrada.get("1.0", END) #fila 1 col 0 hasta fila 2 col 10
         #entrada = "hola("
         analisis = AnalyzerHTML()
+        retorno = analisis.lexer(entrada)
+        self.txtConsola.delete("1.0", END)
+        self.txtConsola.insert("1.0", retorno)
+        messagebox.showinfo('Project 1', 'Analysis Finished')
+
+    def AnalizarAlgebra(self):
+        entrada = self.txtEntrada.get("1.0", END) #fila 1 col 0 hasta fila 2 col 10
+        #entrada = "hola("
+        analisis = AnalyzerAlgebra()
         retorno = analisis.lexer(entrada)
         self.txtConsola.delete("1.0", END)
         self.txtConsola.insert("1.0", retorno)

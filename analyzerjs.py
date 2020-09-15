@@ -116,6 +116,7 @@ class AnalyzerJS:
                     archi1.write(contenido) 
                     archi1.close()
         self.list_failure.clear()
+        self.list_tockens.clear()
         return ""
     
     def S2(self, posInicial, posFinal):

@@ -102,6 +102,7 @@ class AnalyzerHTML:
                     archi1.write(contenido) 
                     archi1.close()
         self.list_failure.clear()
+        self.list_tockens.clear()
         return ""
     
     def S1(self, posInicial, posFinal):
