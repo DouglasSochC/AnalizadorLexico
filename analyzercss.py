@@ -1,22 +1,21 @@
 from tockencss import Token
 from tockencss import Tipo
-
+from tkinter import filedialog
 # El video de la explicacion de este codigo es el video del 26/08/20
 
 class AnalyzerCSS:
 
     list_tockens = []
-    list_failure = list()
+    list_path = []
+    list_failure = []
     post_errors = list()
     caracter = ""
     lexema = ""
     codigo = ""
-    path = ""
-    #"Verificador de Linea de Codigo": Este es un acumulador el cual sirve
-    #como pivote para determinar en que linea del codigo existe un error
-    #de analisis lexico.
-    vlc = 1
-    errores = []   
+    errores = []
+    lineaspath = 2
+    lineadeanalisis = 1
+    posicionenlinea = 0 
 
     def lexer(self, entrada):
         posicion = 0
@@ -45,10 +44,31 @@ class AnalyzerCSS:
                 self.agregarToken(Tipo.GUION, self.caracter)
             elif self.caracter == "*":
                 self.agregarToken(Tipo.ASTERISCO, self.caracter)
+            
+            # S0 -> S12
             elif self.caracter == '"':
-                self.agregarToken(Tipo.NINGUNO, self.caracter)
+                self.agregarToken(Tipo.DOBLECOMILLA, self.caracter)
+                tamanio_lexema = self.getPosicionCierreD(posicion+1)
+                # S12 - S12
+                for x in range(posicion+1, posicion+1+tamanio_lexema):
+                    self.lexema += self.codigo[x]
+                self.agregarToken(Tipo.VALOR , self.lexema)
+                # S12 -> S13
+                self.agregarToken(Tipo.DOBLECOMILLA, self.caracter)
+                posicion = posicion+tamanio_lexema+1
+            
+            # S0 -> S14
             elif self.caracter == "'":
-                self.agregarToken(Tipo.NINGUNO, self.caracter)
+                self.agregarToken(Tipo.COMILLA, self.caracter)
+                tamanio_lexema = self.getPosicionCierreD(posicion+1)
+                
+                # S14 -> S14
+                for x in range(posicion+1, posicion+1+tamanio_lexema):
+                    self.lexema += self.codigo[x]
+                
+                # S14 -> S15
+                self.agregarToken(Tipo.VALOR , self.lexema)
+                posicion = posicion+tamanio_lexema+1
             
             # S0 -> S6
             elif self.caracter == "/":
@@ -62,6 +82,12 @@ class AnalyzerCSS:
                 self.S2(posicion, posicion+tamanio_lexema)
                 posicion = posicion+tamanio_lexema-1
             
+            # S0 -> S4 (Numericos)
+            elif self.caracter.isnumeric():
+                tamanio_lexema = self.getTamanioLexemaNumero(posicion)
+                self.S4(posicion, posicion+tamanio_lexema)
+                posicion = posicion+tamanio_lexema-1
+
             # S0 -> S9
             elif self.caracter == "#" or self.caracter == ".":
                 tamanio_lexema = self.getTamanioLexemaTexto(posicion)
@@ -69,23 +95,32 @@ class AnalyzerCSS:
                 # S9 -> S3
                 self.S3(posicion+1, posicion+tamanio_lexema)
                 posicion = posicion+tamanio_lexema-1
-            
-            # S0 -> S4 (Numericos)
-            elif self.caracter.isnumeric():
-                tamanio_lexema = self.getTamanioLexemaNumero(posicion)
-                self.S4(posicion, posicion+tamanio_lexema)
-                posicion = posicion+tamanio_lexema-1
 
             #Este solo realiza la siguiente iteracion, quiero decir que no se toma 
             # en cuenta estos caracteres
-            elif self.caracter == " " or self.caracter == "\t" or self.caracter=="\n":
+            elif self.caracter == " " or self.caracter == "\t":
+                posicion +=1
+                continue
+            elif self.caracter == "\n":
+                self.lineadeanalisis +=1
                 posicion +=1
                 continue
             else:
                 self.agregarErrores(posicion, self.caracter)
             posicion += 1
-        print("Estos son los tokens validos: ", self.list_tockens)
-        print("Estos son los errores: ", self.list_failure)
+        
+        self.limpiarErrores()
+        for p in self.list_path:
+            if len(p.replace("PATHW:","")) != len(p):
+                
+                nameFile= p.replace("PATHW:","").replace(" ","")+"\salidacss.css"
+                if nameFile!='':
+                    contenido=self.codigo
+                    archi1=open(nameFile, "w", encoding="utf-8")
+                    archi1.write(contenido) 
+                    archi1.close()
+        self.list_failure.clear()
+        self.list_tockens.clear()
         return ""
     
     def S2(self, posInicial, posFinal):
@@ -274,6 +309,8 @@ class AnalyzerCSS:
             elif auxcaracter.isalpha():
                 self.S8(posInicial, posFinal)
                 break
+
+            # S4 -> S4
             elif auxcaracter == "%":
                 self.lexema += auxcaracter
                 self.agregarToken(Tipo.PORCENTAJE, self.lexema)
@@ -296,100 +333,75 @@ class AnalyzerCSS:
             elif auxcaracter.isalpha():
                 self.S8(posInicial, posFinal)
                 break
+            
+            # S5 -> S5
+            elif auxcaracter == "%":
+                self.lexema += auxcaracter
+                self.agregarToken(Tipo.PORCENTAJE, self.lexema)
+
             else:
                 self.agregarErrores(posInicial, self.lexema)
             posInicial += 1
 
     def S6(self, posInicial):
         auxcaracter = ""
-        posError = posInicial-1
+
         while (posInicial < len(self.codigo)):
             auxcaracter = self.codigo[posInicial]
             
             # S6 -> S7
             if  auxcaracter == "*":
                 self.lexema += auxcaracter   
-                val = self.S7(posInicial+1, posInicial)
+                val = self.S7(posInicial+1)
                 posInicial = val
                 break
-            # S6 -> S12
+
+            # S6 -> S11
             elif auxcaracter == "/":
                 tamaniolexema = self.getTamanioComentario(posInicial)
                 posInicial = posInicial + tamaniolexema
                 self.lexema = ""
                 break
-            elif posInicial == (len(self.codigo)-1):
-                posInicial = posError
-                break
-
             #Esto se hizo de esta forma ya que si despues de un / se encuentra algun simbolo
             #que no sea / ó * entonces ese simbolo debe de ser analizado a partir del S0 y
             #se toma la / como un error lexico
             else:
                 # S0
-                self.agregarErrores(posInicial, auxcaracter)                
+                posNueva = posInicial - 1
+                posInicial = posNueva
+                self.agregarErrores(posNueva, self.codigo[posNueva])
+                break
             posInicial += 1
         return posInicial
 
-    def S7(self, posInicial, posError):
+    def S7(self, posInicial):
         auxcaracter = ""
         posFinal = len(self.codigo)
-
-        while (posInicial < len(self.codigo)):
-            # Analizar las posicion en S10
-            auxcaracter = self.codigo[posInicial]            
-
-            #Este se encarga de reconocer si el /* es un error lexico ya que si
-            #se llega al final del analisis, y no encontro el */ entonces si, el
-            #/* es un error lexico
-            if (posInicial == (posFinal-1)):
-                self.agregarErrores(posError, self.lexema)
-                posInicial = posError
-                break
-            
-            # S7 -> S10
-            elif  auxcaracter == "*":
-                #self.lexema += auxcaracter
-                val = self.S10(posInicial+1, posError)
-                posInicial = val
-                break
-
-            # S7 -> S7
-            else:
-                #AQUI DEBE DE IR UN AFD QUE ANALICE LA DIRECCION
-                #EN LA QUE VA A MOSTRAR EL ARCHIVO LIMPIO
-                pass
-            posInicial += 1
-        return posInicial
-
-    def S10(self, posInicial, posError):
-        
-        auxcaracter = ""
-        posFinal = len(self.codigo)
-
+        auxpath = ""
+        posError = posInicial - 2
         while (posInicial < posFinal):
-            auxcaracter += self.codigo[posInicial]
             
-            # S10 -> S10
-            if  self.codigo[posInicial] == "*":
-                pass
+            auxcaracter = self.codigo[posInicial]            
             
-            # S10 -> S11
-            elif self.codigo[posInicial] == "/":
-                self.lexema == ""
-                break
-
-            elif posInicial == (posFinal-1):
-                self.agregarErrores(posError, self.lexema)
+            if (posInicial+1) != posFinal-1:
+                                
+                # S7 -> S10
+                if  auxcaracter == "*" and self.codigo[posInicial + 1] == "/":
+                    posInicial = posInicial+1
+                    if auxpath != "":
+                        self.list_path.append(auxpath)
+                        self.lineaspath -= 1
+                    break
+                
+                # S7 -> S7
+                else:
+                    if self.lineaspath > 0:
+                        auxpath += auxcaracter
+                posInicial += 1                                
+            else:
+                self.agregarErrores(posError, self.codigo[posError])
                 posInicial = posError
                 break
-
-            # S10 -> S7
-            else:
-                val = self.S7(posInicial, posError)
-                posInicial = val
-                break
-            posInicial += 1
         return posInicial
 
     def S8(self, posInicial, posFinal):
@@ -401,17 +413,18 @@ class AnalyzerCSS:
             aux_lexema += self.codigo[x]
         
         aux_lexema = aux_lexema.lower()
-
-        if aux_lexema == "px" or aux_lexema == "em" or aux_lexema == "vh" or aux_lexema == "vw" or aux_lexema == "in" or aux_lexema == "cm" or aux_lexema == "mm" or aux_lexema == "pt" or aux_lexema == "pc":
+        
+        if aux_lexema == "px" or aux_lexema == "em" or aux_lexema == "rem" or aux_lexema == "vh" or aux_lexema == "vw" or aux_lexema == "in" or aux_lexema == "cm" or aux_lexema == "mm" or aux_lexema == "pt" or aux_lexema == "pc":
             self.lexema += aux_lexema
             self.agregarToken(Tipo.UNIDAD_MEDIDA, self.lexema)
             return
         else:
-            self.agregarErrores(posInicial, aux_lexema)
+            self.agregarToken(Tipo.VALOR, self.lexema)
+            for x in range (inicial, final):
+                self.agregarErrores(x, self.codigo[x])
 
-    def agregarErrores(self, tipo, valor):
-        #self.list_tockens.append(nuevo)
-        self.list_failure.append([tipo, valor])
+    def agregarErrores(self, posicion, valor):
+        self.list_failure.append([posicion, valor, self.lineadeanalisis])
         self.lexema = ""
 
     def agregarToken(self, tipo, valor):
@@ -424,7 +437,7 @@ class AnalyzerCSS:
         longitud = 0
         for i in range(posInicial, len(self.codigo)-1):
             #El / debe de estar validado aqui ya que si encuentra hola(){}/*esto es una prueba en una misma linea*/
-            if self.codigo[i] == " " or self.codigo[i] == "(" or self.codigo[i] == ")" or self.codigo[i] == "{" or self.codigo[i] == "}" or self.codigo[i] == ";" or self.codigo[i] == ":" or self.codigo[i] == "," or self.codigo[i] == "+" or self.codigo[i] == "*" or self.codigo[i] == '"' or self.codigo[i] == "'" or self.codigo[i] == "\n" or self.codigo[i] == "/":
+            if self.codigo[i] == " " or self.codigo[i] == "(" or self.codigo[i] == ")" or self.codigo[i] == "{" or self.codigo[i] == "}" or self.codigo[i] == ";" or self.codigo[i] == ":" or self.codigo[i] == "," or self.codigo[i] == "*" or self.codigo[i] == '"' or self.codigo[i] == "'" or self.codigo[i] == "\n" or self.codigo[i] == "/":
                 break
             longitud += 1
         return longitud
@@ -432,7 +445,15 @@ class AnalyzerCSS:
     def getTamanioLexemaNumero(self, posInicial):
         longitud = 0    
         for i in range(posInicial, len(self.codigo)-1):
-            if self.codigo[i] == " " or self.codigo[i] == "(" or self.codigo[i] == ")" or self.codigo[i] == "{" or self.codigo[i] == "}" or self.codigo[i] == ";" or self.codigo[i] == ":" or self.codigo[i] == '"' or self.codigo[i] == "'" or self.codigo[i] == "\n" or self.codigo[i] == ",":
+            if self.codigo[i] == " " or self.codigo[i] == "(" or self.codigo[i] == ")" or self.codigo[i] == "{" or self.codigo[i] == "}" or self.codigo[i] == ";" or self.codigo[i] == ":" or self.codigo[i] == '"' or self.codigo[i] == "'" or self.codigo[i] == "\n" or self.codigo[i] == "," or self.codigo[i] == "/" or self.codigo[i] == "*":
+                break
+            longitud += 1
+        return longitud
+
+    def getPosicionCierreD(self, posInicial):
+        longitud = 0
+        for i in range(posInicial, len(self.codigo)-1):
+            if self.codigo[i] == '"' or self.codigo[i] == "'":
                 break
             longitud += 1
         return longitud
@@ -443,4 +464,9 @@ class AnalyzerCSS:
             if self.codigo[i] == "\n":
                 break
             longitud += 1
-        return longitud    
+        return longitud
+    
+    def limpiarErrores(self):
+        for i in reversed(self.list_failure):
+            salida = self.codigo[:i[0]]+self.codigo[i[0]+1:]
+            self.codigo = salida

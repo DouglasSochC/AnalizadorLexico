@@ -6,16 +6,13 @@ from tockenjs import Tipo
 class AnalyzerJS:
 
     list_tockens = []
+    list_path = []
     list_failure = list()
     post_errors = list()
     caracter = ""
     lexema = ""
     codigo = ""
-    path = ""
-    #"Verificador de Linea de Codigo": Este es un acumulador el cual sirve
-    #como pivote para determinar en que linea del codigo existe un error
-    #de analisis lexico.
-    vlc = 1
+    lineaspath = 2 
     errores = []   
 
     def lexer(self, entrada):
@@ -59,17 +56,37 @@ class AnalyzerJS:
                 self.agregarToken(Tipo.MULTIPLICACION, self.caracter) 
             elif self.caracter == "|":
                 self.agregarToken(Tipo.MULTIPLICACION, self.caracter)     
+            
+            # S0 -> S12
             elif self.caracter == '"':
-                self.agregarToken(Tipo.NINGUNO, self.caracter)
+                self.agregarToken(Tipo.DOBLECOMILLA, self.caracter)
+                tamanio_lexema = self.getPosicionCierreD(posicion+1)
+                # S12 - > S12
+                for x in range(posicion+1, posicion+1+tamanio_lexema):
+                    self.lexema += self.codigo[x]
+                self.agregarToken(Tipo.VALOR , self.lexema)
+                # S12 -> S13
+                self.agregarToken(Tipo.DOBLECOMILLA, self.caracter)
+                posicion = posicion+tamanio_lexema+1
+            
+            # S0 -> S14
             elif self.caracter == "'":
-                self.agregarToken(Tipo.NINGUNO, self.caracter)
+                self.agregarToken(Tipo.COMILLA, self.caracter)
+                tamanio_lexema = self.getPosicionCierreD(posicion+1)
+                # S14 -> S14
+                for x in range(posicion+1, posicion+1+tamanio_lexema):
+                    self.lexema += self.codigo[x]
+                # S14 -> S15
+                self.agregarToken(Tipo.VALOR , self.lexema)
+                posicion = posicion+tamanio_lexema+1
+            
+            # S0 -> S6
             elif self.caracter == "/":
                 self.lexema += self.caracter
                 val = self.S6(posicion+1)
                 posicion = val
 
             # S0 - S2 (Reservadas | Identificadores)
-            #Hay que recordar que en este lexema lleva guion bajo
             elif self.caracter.isalpha():
                 tamanio_lexema = self.getTamanioLexemaTexto(posicion)
                 self.S2(posicion, posicion+tamanio_lexema)
@@ -80,14 +97,26 @@ class AnalyzerJS:
                 tamanio_lexema = self.getTamanioLexemaNumero(posicion)
                 self.S4(posicion, posicion+tamanio_lexema)
                 posicion = posicion+tamanio_lexema-1
+
             elif self.caracter == " " or self.caracter == "\t" or self.caracter=="\n":
                 posicion +=1
                 continue
             else:
                 self.agregarErrores(posicion, self.caracter)
             posicion += 1
-        print("Estos son los tokens validos: ", self.list_tockens)
-        print("Estos son los errores: ", self.list_failure)
+        
+        self.limpiarErrores()
+        for p in self.list_path:
+            if len(p.replace("PATHW","")) != len(p):
+                
+                nameFile= p.replace("PATHW","").replace(" ","").replace("->","")+"\salidajs.js"
+                if nameFile!='':
+                    contenido=self.codigo
+                    archi1=open(nameFile, "w", encoding="utf-8")
+                    archi1.write(contenido) 
+                    archi1.close()
+        self.list_failure.clear()
+        self.list_tockens.clear()
         return ""
     
     def S2(self, posInicial, posFinal):
@@ -159,7 +188,7 @@ class AnalyzerJS:
                 self.lexema += auxcaracter
                 if  (posInicial+1 == posFinal):
                     self.agregarToken(Tipo.ID, self.lexema)                    
-            
+            # S3 -> S3
             elif auxcaracter == "_":
                 self.lexema += auxcaracter
                 if  (posInicial+1 == posFinal):
@@ -184,6 +213,8 @@ class AnalyzerJS:
                 self.lexema += auxcaracter
                 if  (posInicial+1 == posFinal):
                     self.agregarToken(Tipo.VALOR, self.lexema)
+
+            # S4 -> S5
             elif auxcaracter == ".":
                 if  (posInicial == posFinal):
                     self.lexema += auxcaracter
@@ -209,38 +240,59 @@ class AnalyzerJS:
 
     def S6(self, posInicial):
         auxcaracter = ""
+
         while (posInicial < len(self.codigo)):
             auxcaracter = self.codigo[posInicial]
+            
+            # S6 -> S7
             if  auxcaracter == "*":
-                # S6 -> S7
-                posInicial = self.S7(posInicial)
-
+                self.lexema += auxcaracter   
+                val = self.S7(posInicial+1)
+                posInicial = val
+                break
+            
+            # S6 -> S11
             elif auxcaracter == "/":
                 tamaniolexema = self.getTamanioComentario(posInicial)
                 posInicial = posInicial + tamaniolexema
-
-            elif auxcaracter == " " or auxcaracter == "\t" or auxcaracter =="\n":
+                self.lexema = ""
                 break
             else:
                 # S0
-                self.agregarToken(Tipo.VALOR, self.lexema)
-                posInicial += 1
+                posNueva = posInicial - 1
+                posInicial = posNueva
+                self.agregarErrores(posNueva, self.codigo[posNueva])
                 break
             posInicial += 1
         return posInicial
 
     def S7(self, posInicial):
         auxcaracter = ""
-        while (posInicial < len(self.codigo)):
-            # S0
-            if  self.codigo[posInicial] == "*" and self.codigo[posInicial+1] == "/":
-                self.lexema = ""
-                posInicial += 1
-                break
-            else:
+        posFinal = len(self.codigo)
+        auxpath = ""
+        posError = posInicial - 2
+        while (posInicial < posFinal):
+            
+            auxcaracter = self.codigo[posInicial]            
+            
+            if (posInicial+1) != posFinal-1:
+                                
+                # S7 -> S10
+                if  auxcaracter == "*" and self.codigo[posInicial + 1] == "/":
+                    posInicial = posInicial+1
+                    if auxpath != "":
+                        self.list_path.append(auxpath)
+                        self.lineaspath -= 1
+                    break
                 # S7 -> S7
-                auxcaracter += self.codigo[posInicial]
-            posInicial += 1
+                else:
+                    if self.lineaspath > 0:
+                        auxpath += auxcaracter
+                posInicial += 1                                
+            else:
+                self.agregarErrores(posError, self.codigo[posError])
+                posInicial = posError
+                break
         return posInicial
 
     def agregarErrores(self, tipo, valor):
@@ -257,15 +309,23 @@ class AnalyzerJS:
     def getTamanioLexemaTexto(self, posInicial):
         longitud = 0
         for i in range(posInicial, len(self.codigo)-1):
-            if self.codigo[i] == " " or self.codigo[i] == "(" or self.codigo[i] == ")" or self.codigo[i] == "{" or self.codigo[i] == "}" or self.codigo[i] == ";" or self.codigo[i] == ":" or self.codigo[i] == "." or self.codigo[i] == "," or self.codigo[i] == "=" or self.codigo[i] == "+" or self.codigo[i] == "-" or self.codigo[i] == "*" or self.codigo[i] == '"' or self.codigo[i] == "'" or self.codigo[i] == "\n" or self.codigo == "|" or self.codigo == "&" or self.codigo == "<" or self.codigo == ">":
+            if self.codigo[i] == " " or self.codigo[i] == "(" or self.codigo[i] == ")" or self.codigo[i] == "{" or self.codigo[i] == "}" or self.codigo[i] == ";" or self.codigo[i] == ":" or self.codigo[i] == "." or self.codigo[i] == "," or self.codigo[i] == "=" or self.codigo == "<" or self.codigo == ">" or self.codigo[i] == "+" or self.codigo[i] == "-" or self.codigo[i] == "!" or self.codigo[i] == "*" or self.codigo[i] == '"' or self.codigo[i] == "'" or self.codigo[i] == "\n" or self.codigo == "|" or self.codigo == "&" or self.codigo[i] == '/':
                 break
             longitud += 1
         return longitud
 
-    def getTamanioLexemaNumero(self, posInicial):
-        longitud = 0    
+    def getTamanioLexemaNumero(self, posInicial):  
+        longitud = 0
         for i in range(posInicial, len(self.codigo)-1):
-            if self.codigo[i] == " " or self.codigo[i] == "(" or self.codigo[i] == ")" or self.codigo[i] == "{" or self.codigo[i] == "}" or self.codigo[i] == ";" or self.codigo[i] == ":" or self.codigo[i] == "." or self.codigo[i] == "," or self.codigo[i] == "=" or self.codigo[i] == "+" or self.codigo[i] == "-" or self.codigo[i] == "*" or self.codigo[i] == '"' or self.codigo[i] == "'" or self.codigo[i] == "\n":
+            if self.codigo[i] == " " or self.codigo[i] == "(" or self.codigo[i] == ")" or self.codigo[i] == "{" or self.codigo[i] == "}" or self.codigo[i] == ";" or self.codigo[i] == ":" or self.codigo[i] == "," or self.codigo[i] == "=" or self.codigo == "<" or self.codigo == ">" or self.codigo[i] == "+" or self.codigo[i] == "-" or self.codigo[i] == "!" or self.codigo[i] == "*" or self.codigo[i] == '"' or self.codigo[i] == "'" or self.codigo[i] == "\n" or self.codigo == "|" or self.codigo == "&" or self.codigo[i] == '/':
+                break
+            longitud += 1
+        return longitud
+
+    def getPosicionCierreD(self, posInicial):
+        longitud = 0
+        for i in range(posInicial, len(self.codigo)-1):
+            if self.codigo[i] == '"' or self.codigo[i] == "'":
                 break
             longitud += 1
         return longitud
@@ -276,4 +336,9 @@ class AnalyzerJS:
             if self.codigo[i] == "\n":
                 break
             longitud += 1
-        return longitud    
+        return longitud
+
+    def limpiarErrores(self):
+        for i in reversed(self.list_failure):
+            salida = self.codigo[:i[0]]+' '+self.codigo[i[0]+1:]
+            self.codigo = salida    

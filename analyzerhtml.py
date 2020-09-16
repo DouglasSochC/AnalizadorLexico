@@ -25,49 +25,60 @@ class AnalyzerHTML:
             self.codigo = entrada
             self.caracter = entrada[posicion]
             
-            # S0 -> S1 (Simbolos del Lenguaje)
+            # S0 -> Sq (Simbolos del Lenguaje)
             if self.caracter == "/":
                 self.agregarToken(Tipo.DIAGONAL , self.caracter)
-            
-            elif self.caracter == '"':
-                self.agregarToken(Tipo.DOBLECOMILLA, self.caracter)
-                tamanio_lexema = self.getPosicionCierreD(posicion+1)
-                for x in range(posicion+1, posicion+1+tamanio_lexema):
-                    self.lexema += self.codigo[x]
-                self.agregarToken(Tipo.VALOR , self.lexema)
-                self.agregarToken(Tipo.DOBLECOMILLA, self.caracter)
-                posicion = posicion+tamanio_lexema+1
-            
-            elif self.caracter == "'":
-                self.agregarToken(Tipo.COMILLA, self.caracter)
-                tamanio_lexema = self.getPosicionCierreD(posicion+1)
-                for x in range(posicion+1, posicion+1+tamanio_lexema):
-                    self.lexema += self.codigo[x]
-                self.agregarToken(Tipo.VALOR , self.lexema)
-                posicion = posicion+tamanio_lexema+1
             
             elif self.caracter == "=":
                 self.agregarToken(Tipo.IGUAL, self.caracter)
 
+            elif self.caracter == '"':
+                # S0 -> S8
+                self.agregarToken(Tipo.DOBLECOMILLA, self.caracter)
+                tamanio_lexema = self.getPosicionCierreD(posicion+1)
+                # S8 -> S8
+                for x in range(posicion+1, posicion+1+tamanio_lexema):
+                    self.lexema += self.codigo[x]
+                self.agregarToken(Tipo.VALOR , self.lexema)
+                # S8 -> S9
+                self.agregarToken(Tipo.DOBLECOMILLA, self.caracter)
+                posicion = posicion+tamanio_lexema+1
+            
+            elif self.caracter == "'":
+                # S0 - S10
+                self.agregarToken(Tipo.COMILLA, self.caracter)
+                tamanio_lexema = self.getPosicionCierreD(posicion+1)
+                # S10 -> S10
+                for x in range(posicion+1, posicion+1+tamanio_lexema):
+                    self.lexema += self.codigo[x]
+                # S10 -> S11
+                self.agregarToken(Tipo.VALOR , self.lexema)
+                posicion = posicion+tamanio_lexema+1            
+
             elif self.caracter == ">":
+                # S0 -> S12
                 self.agregarToken(Tipo.MAYOR , self.caracter)
                 tamanio_lexema = self.getPosicionCierre(posicion)
+                # S12 -> S12
                 for x in range(posicion+1, posicion+tamanio_lexema):
                     self.lexema += self.codigo[x]
+                # S13 -> S13
                 self.agregarToken(Tipo.VALOR , self.lexema)
                 posicion = posicion+tamanio_lexema-1
 
-            # S1 -> S5
+            # S0 -> S5
             elif self.caracter == "<":
                 self.lexema += self.caracter
                 val = self.S5(posicion+1)
                 posicion = val
             
+            # S0 -> S1
             elif self.caracter.isalpha():
                 tamanio_lexema = self.getTamanioLexemaTexto(posicion)
                 self.S1(posicion, posicion+tamanio_lexema)
                 posicion = posicion+tamanio_lexema-1
             
+            # S0 -> S3
             elif self.caracter.isnumeric():
                 tamanio_lexema = self.getTamanioLexemaTexto(posicion)
                 self.S3(posicion, posicion+tamanio_lexema)
@@ -79,9 +90,19 @@ class AnalyzerHTML:
             else:
                 self.agregarErrores(posicion, self.caracter)
             posicion += 1
-        print("Estos path: ", self.list_path)
-        print("Estos son los tokens validos: ", self.list_tockens)
-        print("Estos son los errores: ", self.list_failure)
+        
+        self.limpiarErrores()
+        for p in self.list_path:
+            if len(p.replace("PATHW:","")) != len(p):
+                
+                nameFile= p.replace("PATHW:","").replace(" ","")+"\salidahtml.html"
+                if nameFile!='':
+                    contenido=self.codigo
+                    archi1=open(nameFile, "w", encoding="utf-8")
+                    archi1.write(contenido) 
+                    archi1.close()
+        self.list_failure.clear()
+        self.list_tockens.clear()
         return ""
     
     def S1(self, posInicial, posFinal):
@@ -178,7 +199,7 @@ class AnalyzerHTML:
         self.lexema = ""
         while  (inicial < final):
             auxcaracter = self.codigo[inicial]
-            # S0 -> S4
+            # S1 -> S2
             if auxcaracter.isalpha():                
                 self.S2(inicial, final)
                 break
@@ -210,7 +231,7 @@ class AnalyzerHTML:
         while  (posInicial < posFinal):
             auxcaracter = self.codigo[posInicial]
 
-            # S4 -> S4
+            # S3 -> S3
             if auxcaracter.isnumeric():
                 self.lexema += auxcaracter
                 if  (posInicial+1 == posFinal):
@@ -229,7 +250,7 @@ class AnalyzerHTML:
         while  (posInicial < posFinal):
             caracter = self.codigo[posInicial]
 
-            # S5 -> S5
+            # S4 -> S4
             if caracter.isnumeric():
                 self.lexema += caracter
                 if  (posInicial+1 == posFinal):
@@ -250,7 +271,7 @@ class AnalyzerHTML:
                 # S5 -> S6
                 if  auxcaracter == "!" and self.codigo[posInicial + 1] == "-" and self.codigo[posInicial + 2] == "-":
                     self.lexema = ""  
-                    val = self.S6(posInicial+2)
+                    val = self.S6(posInicial+3)
                     posInicial = val
                     break
                 else: 
@@ -266,14 +287,15 @@ class AnalyzerHTML:
         auxpath = ""
         while (posInicial < posFinal):
             
-            auxcaracter = self.codigo[posInicial]            
-            
+            auxcaracter = self.codigo[posInicial]
+
             if posInicial+2 != posFinal-1:
-                # S7 -> S10
+                # S6 -> S7
                 if  auxcaracter == "-" and self.codigo[posInicial + 1] == "-" and self.codigo[posInicial + 2] == ">":
                     posInicial = posInicial+2
-                    self.list_path.append(auxpath)
-                    self.lineaspath -= 1
+                    if auxpath != "":
+                        self.list_path.append(auxpath)
+                        self.lineaspath -= 1
                     break
                 else:
                     if self.lineaspath > 0:
@@ -313,9 +335,12 @@ class AnalyzerHTML:
     def getPosicionCierreD(self, posInicial):
         longitud = 0
         for i in range(posInicial, len(self.codigo)-1):
-            prueba = self.codigo[i]
             if self.codigo[i] == '"' or self.codigo[i] == "'":
                 break
             longitud += 1
         return longitud
-  
+    
+    def limpiarErrores(self):
+        for i in reversed(self.list_failure):
+            salida = self.codigo[:i[0]]+' '+self.codigo[i[0]+1:]
+            self.codigo = salida

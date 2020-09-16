@@ -68,6 +68,8 @@ class Tipo(Enum):
     COLORES = 54
     URL = 55
     CADENAS = 56
+    COMILLA = 57
+    DOBLECOMILLA = 58
 
 class Token:
     tipoToken = Tipo.NINGUNO
