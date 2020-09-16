@@ -1,6 +1,6 @@
 from tockenhtml import Token
 from tockenhtml import Tipo
-
+import subprocess
 # El video de la explicacion de este codigo es el video del 26/08/20
 
 class AnalyzerHTML:
@@ -101,6 +101,7 @@ class AnalyzerHTML:
                     archi1=open(nameFile, "w", encoding="utf-8")
                     archi1.write(contenido) 
                     archi1.close()
+        self.abrirErroresHTML()
         self.list_failure.clear()
         self.list_tockens.clear()
         return ""
@@ -344,3 +345,36 @@ class AnalyzerHTML:
         for i in reversed(self.list_failure):
             salida = self.codigo[:i[0]]+' '+self.codigo[i[0]+1:]
             self.codigo = salida
+    
+    def abrirErroresHTML(self):
+        encabezado="""<html>
+        <head><title>Errores del Archivo</title></head>
+        <body>
+
+        <h1>Errores</h1>
+
+        <table border ='1'>
+        <tr>
+        <td><strong>No</strong></td>
+        <td><strong>Posicion Caracter</strong></td>
+        <td><strong>Descripcion</strong></td>
+        </tr>
+        """
+        cuerpo = ""
+        acum = 1
+        for x in self.list_failure:
+            cuerpo += "<tr><td>"+str(acum)+"</td>"+"<td>"+str(x[0])+"</td>"+"<td>"+x[1]+"</td></tr>"
+            acum +=1
+
+        pie ="""</body>
+        </html> """
+        completo = encabezado + cuerpo + pie
+        
+        archi1=open("errorhtml.html", "w", encoding="utf-8")
+        archi1.write(completo) 
+        archi1.close()
+        if acum != 1:
+            self.cmd("start errorhtml.html")
+
+    def cmd(self, commando):
+        subprocess.run(commando, shell=True)

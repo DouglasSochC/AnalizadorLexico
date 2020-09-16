@@ -1,6 +1,7 @@
 from tockenjs import Token
 from tockenjs import Tipo
-
+import subprocess
+import os
 # El video de la explicacion de este codigo es el video del 26/08/20
 
 class AnalyzerJS:
@@ -14,6 +15,8 @@ class AnalyzerJS:
     codigo = ""
     lineaspath = 2 
     errores = []   
+    reporte = []
+    cantidadgrafos = 2
 
     def lexer(self, entrada):
         posicion = 0
@@ -23,6 +26,9 @@ class AnalyzerJS:
             
             # S0 -> S1 (Simbolos del Lenguaje)
             if self.caracter == "(":
+                if self.cantidadgrafos == 2:
+                    self.ingresarGrafo("S1",["S0","S1",self.caracter])
+                    self.cantidadgrafos -= 1
                 self.agregarToken(Tipo.PARENT_IZQ , self.caracter)
             elif self.caracter == ")":
                 self.agregarToken(Tipo.PARENT_DER , self.caracter)
@@ -115,6 +121,8 @@ class AnalyzerJS:
                     archi1=open(nameFile, "w", encoding="utf-8")
                     archi1.write(contenido) 
                     archi1.close()
+        self.abrirErroresJS()
+        self.imagenAFD()
         self.list_failure.clear()
         self.list_tockens.clear()
         return ""
@@ -129,6 +137,9 @@ class AnalyzerJS:
         aux_lexema = self.lexema.lower()
 
         if aux_lexema == "var":
+            if self.cantidadgrafos == 1:
+                self.ingresarGrafo("S2",["S0","S2",aux_lexema])
+                self.cantidadgrafos -= 1
             self.agregarToken(Tipo.VAR, aux_lexema)
             return
         elif aux_lexema == "if":
@@ -341,4 +352,62 @@ class AnalyzerJS:
     def limpiarErrores(self):
         for i in reversed(self.list_failure):
             salida = self.codigo[:i[0]]+' '+self.codigo[i[0]+1:]
-            self.codigo = salida    
+            self.codigo = salida
+
+    def abrirErroresJS(self):
+        encabezado="""<html>
+        <head><title>Errores del Archivo</title></head>
+        <body>
+
+        <h1>Errores</h1>
+
+        <table border ='1'>
+        <tr>
+        <td><strong>No</strong></td>
+        <td><strong>Posicion Caracter</strong></td>
+        <td><strong>Descripcion</strong></td>
+        </tr>
+        """
+        cuerpo = ""
+        acum = 1
+        for x in self.list_failure:
+            cuerpo += "<tr><td>"+str(acum)+"</td>"+"<td>"+str(x[0])+"</td>"+"<td>"+x[1]+"</td></tr>"
+            acum +=1
+
+        pie ="""</body>
+        </html> """
+        completo = encabezado + cuerpo + pie
+        
+        archi1=open("errorjs.html", "w", encoding="utf-8")
+        archi1.write(completo) 
+        archi1.close()
+        if acum != 1:
+            self.cmd("start errorjs.html")
+
+    def cmd(self, commando):
+        subprocess.run(commando, shell=True)
+
+    def ingresarGrafo(self, estadosaceptacion, transiciones):
+        self.reporte.append([estadosaceptacion, transiciones])
+
+    def imagenAFD(self):
+        encabezado = 'digraph unix {\n'+ 'size="5,6";\n'+ 'rankdir="LR";\n'
+        
+        estadosaceptacion = ""
+
+        for x in self.reporte:
+            estadosaceptacion = estadosaceptacion+","+x[0]
+        primeraparte = "node [shape = doublecircle]"+estadosaceptacion[1:]+";\n"
+        cuerpo = ""
+        for x in self.reporte:
+            cuerpo = cuerpo+x[1][0]+" -> "+x[1][1]+' [label="'+x[1][2]+'"] \n'
+        
+        final = "}"
+        texto = encabezado+primeraparte+cuerpo+final
+        nombre = "imagen"+str(self.cantidadgrafos)+".txt"
+        objFichero = open(nombre,'w')
+        nuevotexto = texto
+        objFichero.write(nuevotexto)
+        objFichero.close()
+
+        os.system("dot -Tpng "+nombre+" -o imagenproyecto.png")   

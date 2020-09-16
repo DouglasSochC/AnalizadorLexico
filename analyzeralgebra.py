@@ -1,5 +1,6 @@
 from tockenalgebra import Token
 from tockenalgebra import Tipo
+import subprocess
 # El video de la explicacion de este codigo es el video del 26/08/20
 
 class AnalyzerAlgebra:
@@ -13,50 +14,55 @@ class AnalyzerAlgebra:
     codigo = ""
     errores = []
     lineaspath = 2
-    lineadeanalisis = 1
-    posicionenlinea = 0 
-
+    linea = 1
+    reporte = []
+    
     def lexer(self, entrada):
-        print(entrada.split("\n"))
-        posicion = 0
-        while posicion < len(entrada):
-            self.codigo = entrada
-            self.caracter = entrada[posicion]
-            
-            # S0 -> S1 (Simbolos del Lenguaje)
-            if self.caracter == "(":
-                self.agregarToken(Tipo.PARENT_IZQ , self.caracter)
-            elif self.caracter == ")":
-                self.agregarToken(Tipo.PARENT_DER , self.caracter)
-            elif self.caracter == "*":
-                self.agregarToken(Tipo.MULTIPLICACION , self.caracter)
-            elif self.caracter == "/":
-                self.agregarToken(Tipo.DIVISION , self.caracter)
-            elif self.caracter == "-":
-                self.agregarToken(Tipo.RESTA, self.caracter)
-            elif self.caracter == "+":
-                self.agregarToken(Tipo.SUMA, self.caracter)
-            
-            # S0 - S2 (Reservadas | Identificadores)
-            elif self.caracter.isalpha():
-                tamanio_lexema = self.getTamanioLexema(posicion)
-                self.S3(posicion, posicion+tamanio_lexema)
-                posicion = posicion+tamanio_lexema-1
-            
-            # S0 -> S4 (Numericos)
-            elif self.caracter.isnumeric():
-                tamanio_lexema = self.getTamanioLexema(posicion)
-                self.S4(posicion, posicion+tamanio_lexema)
-                posicion = posicion+tamanio_lexema-1
-            
-            #Este solo realiza la siguiente iteracion, quiero decir que no se toma 
-            # en cuenta estos caracteres
-            elif self.caracter == " " or self.caracter == "\t" or self.caracter == "\n":
-                posicion +=1
-                continue
-            posicion += 1
-        self.analizarExpresion()
-        self.list_tockens.clear()
+        
+        lineadeanalisis = entrada.split("\n")
+        for x in lineadeanalisis:
+            if x != '':
+                posicion = 0
+                while posicion < len(x):
+                    self.codigo = x
+                    self.caracter = x[posicion]
+                    
+                    # S0 -> S1 (Simbolos del Lenguaje)
+                    if self.caracter == "(":
+                        self.agregarToken(Tipo.PARENT_IZQ , self.caracter)
+                    elif self.caracter == ")":
+                        self.agregarToken(Tipo.PARENT_DER , self.caracter)
+                    elif self.caracter == "*":
+                        self.agregarToken(Tipo.MULTIPLICACION , self.caracter)
+                    elif self.caracter == "/":
+                        self.agregarToken(Tipo.DIVISION , self.caracter)
+                    elif self.caracter == "-":
+                        self.agregarToken(Tipo.RESTA, self.caracter)
+                    elif self.caracter == "+":
+                        self.agregarToken(Tipo.SUMA, self.caracter)
+                    
+                    # S0 - S2 (Reservadas | Identificadores)
+                    elif self.caracter.isalpha():
+                        tamanio_lexema = self.getTamanioLexema(posicion)
+                        self.S3(posicion, posicion+tamanio_lexema)
+                        posicion = posicion+tamanio_lexema-1
+                    
+                    # S0 -> S4 (Numericos)
+                    elif self.caracter.isnumeric():
+                        tamanio_lexema = self.getTamanioLexema(posicion)
+                        self.S4(posicion, posicion+tamanio_lexema)
+                        posicion = posicion+tamanio_lexema-1
+                    
+                    #Este solo realiza la siguiente iteracion, quiero decir que no se toma 
+                    # en cuenta estos caracteres
+                    elif self.caracter == " " or self.caracter == "\t" or self.caracter == "\n":
+                        posicion +=1
+                        continue
+                    posicion += 1
+            self.analizarExpresion()
+            self.list_tockens.clear()
+            self.linea +=1
+        self.abrirReporte()
         return ""
 
     def S3(self, posInicial, posFinal):
@@ -150,13 +156,15 @@ class AnalyzerAlgebra:
                 acumulador += 1
             if i[1] == ")":
                 acumulador -= 1
-        if acumulador == 0:
-            print("Es correcta la expresion")
-        else:
-            print("Es incorrecta la expresion")
+        if self.codigo != "":
+            if acumulador == 0:
+                self.reporte.append([self.linea, self.codigo, "Es Correcta la Expresion"])
+            else:
+                self.reporte.append([self.linea, self.codigo, "Es Incorrecta la Expresion"])
+        self.codigo = ""
 
     def agregarErrores(self, posicion, valor):
-        self.list_failure.append([posicion, valor, self.lineadeanalisis])
+        self.list_failure.append([posicion, valor])
         self.lexema = ""
 
     def agregarToken(self, tipo, valor):
@@ -167,9 +175,44 @@ class AnalyzerAlgebra:
     
     def getTamanioLexema(self, posInicial):
         longitud = 0
-        for i in range(posInicial, len(self.codigo)-1):
+        for i in range(posInicial, len(self.codigo)):
             #El / debe de estar validado aqui ya que si encuentra hola(){}/*esto es una prueba en una misma linea*/
             if self.codigo[i] == " " or self.codigo[i] == "(" or self.codigo[i] == ")" or self.codigo[i] == "*" or self.codigo[i] == "/" or self.codigo[i] == "-" or self.codigo[i] == "+" or self.codigo[i] == "\n":
                 break
             longitud += 1
         return longitud
+    
+    def abrirReporte(self):
+        encabezado="""<html>
+        <head><title>Analisis Sintactico</title></head>
+        <body>
+
+        <h1>Analisis</h1>
+
+        <table border ='1'>
+        <tr>
+        <td><strong>No</strong></td>
+        <td><strong>Linea</strong></td>
+        <td><strong>Operacion</strong></td>
+        <td><strong>Analisis</strong></td>
+        </tr>
+        """
+        cuerpo = ""
+        acum = 1
+        for x in self.reporte:
+            cuerpo += "<tr><td>"+str(acum)+"</td>"+"<td>"+str(x[0])+"</td>"+"<td>"+x[1]+"</td><td>"+x[2]+"</td></tr>"
+            acum +=1
+
+        pie ="""</body>
+        </html> """
+        completo = encabezado + cuerpo + pie
+        
+        archi1=open("reportealgebra.html", "w", encoding="utf-8")
+        archi1.write(completo) 
+        archi1.close()
+        if acum != 1:
+            self.cmd("start reportealgebra.html")
+        self.reporte.clear()
+
+    def cmd(self, commando):
+        subprocess.run(commando, shell=True)

@@ -33,14 +33,14 @@ class GUI:
         self.file_item.add_separator()
         self.file_item.add_command(label='Salir')
 
-        self.report_item = Menu(self.menu)    # menu Reports
+        """self.report_item = Menu(self.menu)    # menu Reports
         self.report_item.add_separator()
         self.report_item.add_command(label='Errors')
         self.report_item.add_separator()
-        self.report_item.add_command(label='Tree')
+        self.report_item.add_command(label='Tree')"""
 
         self.menu.add_cascade(label='File', menu=self.file_item)
-        self.menu.add_cascade(label='Reports', menu=self.report_item)
+        #self.menu.add_cascade(label='Reports', menu=self.report_item)
         self.window.config(menu=self.menu)
         
         # propiedades del textarea
@@ -60,16 +60,17 @@ class GUI:
         self.lblConsole = Label(self.window, text="Console:")  #label 
         self.lblConsole.place(x=50, y = 465)
         # textArea consola
+        ejex = 150
         self.txtConsola = scrolledtext.ScrolledText(self.window,width=90,height=10)   
         self.txtConsola.place(x=50, y = 490)
         self.btn = Button(self.window, text="Analizar JS", bg="black", fg="white", command=self.AnalizarJS)    #btn Analyze
-        self.btn.place(x=0, y = 0)
+        self.btn.place(x=ejex, y = 0)
         self.btncss = Button(self.window, text="Analizar CSS", bg="black", fg="white", command=self.AnalizarCSS)    #btn Analyze
-        self.btncss.place(x=100, y = 0)
+        self.btncss.place(x=ejex+100, y = 0)
         self.btnhtml = Button(self.window, text="Analizar HTML", bg="black", fg="white", command=self.AnalizarHTML)    #btn Analyze
-        self.btnhtml.place(x=215, y = 0)
+        self.btnhtml.place(x=ejex+215, y = 0)
         self.btnhtml = Button(self.window, text="Analizar Algebra", bg="black", fg="white", command=self.AnalizarAlgebra)    #btn Analyze
-        self.btnhtml.place(x=350, y = 0)
+        self.btnhtml.place(x=ejex+350, y = 0)
         # Dispara la interfaz
         self.txtEntrada.mainloop()
         self.window.mainloop()
